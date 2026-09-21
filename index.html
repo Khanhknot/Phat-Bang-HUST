@@ -127,12 +127,16 @@
       text-transform: uppercase;
     }
 
-    h1 {
+    h1,
+    .stt-label {
       font-family: 'Playfair Display', serif;
       font-size: clamp(1.4rem, 4vw, 1.9rem);
       font-weight: 900;
       color: var(--white);
       line-height: 1.2;
+    }
+
+    h1 {
       margin-bottom: 0.4rem;
     }
 
@@ -223,11 +227,9 @@
       transition: opacity 0.3s;
     }
 
-    .placeholder-text {
-      color: rgba(255, 255, 255, 0.15);
-      font-size: 0.85rem;
-      letter-spacing: 0.05em;
-      text-align: center;
+    #search-panel[hidden]+#result {
+      border-top: 0;
+      padding-top: 0;
     }
 
     /* Found card */
@@ -250,15 +252,11 @@
 
     .stt-display {
       text-align: center;
-      margin: 0 0 1.5rem;
+      margin-bottom: 1.25rem;
     }
 
     .stt-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.6rem;
     }
 
     .stt-number {
@@ -270,28 +268,46 @@
       text-shadow: 0 0 40px rgba(201, 168, 76, 0.3);
     }
 
-    .stt-info-row {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 0.75rem;
-    }
-
-    .info-chip {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 3px;
-      padding: 0.6rem 1.5rem;
-      text-align: center;
-      min-width: 140px;
-    }
-
-    .info-chip-value {
-      font-size: 1.1rem;
+    .degree-text {
+      color: var(--gold-light);
+      font-size: 1rem;
       font-weight: 500;
+      letter-spacing: 0.03em;
+      margin-top: 0.7rem;
+      text-align: center;
+    }
+
+    .student-name {
       color: var(--white);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.25rem, 5vw, 1.65rem);
+      font-weight: 700;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .student-id {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      margin-top: 0.35rem;
+      text-align: center;
+    }
+
+    .reset-button {
+      display: block;
+      margin: 1.5rem auto 0;
+      background: transparent;
+      border: 1px solid rgba(201, 168, 76, 0.55);
+      color: var(--gold-light);
+    }
+
+    .reset-button:hover {
+      background: rgba(201, 168, 76, 0.1);
+    }
+
+    [hidden] {
+      display: none !important;
     }
 
     /* Not found */
@@ -301,6 +317,7 @@
     }
 
     .notfound-icon {
+      color: #f87171;
       font-size: 1.8rem;
       margin-bottom: 0.5rem;
     }
@@ -333,6 +350,20 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+
+    @media (max-width: 420px) {
+      .card {
+        padding: 2rem 1.25rem;
+      }
+
+      .input-wrapper {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
@@ -341,71 +372,114 @@
   <div class="top-border"></div>
 
   <div class="card">
-    <div class="header">
+    <div id="search-panel">
+      <div class="header">
 
-      <h1>Tra Cứu Số Thứ Tự</h1>
-    </div>
+        <h1>Tra Cứu Số Thứ Tự</h1>
+      </div>
 
-    <div class="input-section">
-      <label for="shsv-input">Nhập Mã số sinh viên</label>
-      <div class="input-wrapper">
-        <input type="text" id="shsv-input" placeholder="VD: 20211999" inputmode="numeric" autocomplete="off"
-          spellcheck="false" />
-        <button onclick="lookup()">Tra cứu</button>
+      <div class="input-section">
+        <label for="mssv-input">Nhập mã số sinh viên</label>
+        <div class="input-wrapper">
+          <input type="text" id="mssv-input" placeholder="VD: 20211593" inputmode="numeric" autocomplete="off"
+            spellcheck="false" maxlength="9" pattern="[0-9]{8,9}" aria-describedby="input-hint" />
+          <button type="button" id="lookup-button">Tra cứu</button>
+        </div>
       </div>
     </div>
 
-    <div id="result">
-      <p class="placeholder-text">Kết quả sẽ hiển thị ở đây</p>
+    <div id="result" role="status" aria-live="polite" hidden>
+      <div class="result-found" id="result-found" hidden>
+        <div class="stt-display">
+          <div class="stt-label">Số thứ tự nhận bằng</div>
+          <div class="stt-number" id="result-stt"></div>
+        </div>
+        <div class="student-name" id="result-name"></div>
+        <div class="student-id" id="result-mssv"></div>
+        <div class="degree-text" id="result-degree"></div>
+        <button type="button" id="reset-button" class="reset-button">Tra MSSV khác</button>
+      </div>
+
+      <div class="result-notfound" id="result-error" hidden>
+        <div class="notfound-icon">✕</div>
+        <div class="notfound-text" id="error-title">Không tìm thấy sinh viên</div>
+        <div class="notfound-hint" id="input-hint">Kiểm tra lại mã số sinh viên</div>
+      </div>
     </div>
   </div>
 
   <div class="bottom-border"></div>
 
 
+  <script src="students.js"></script>
   <script>
-    const DATA = [{ "STT": 1, "Bang": "Cử nhân", "SHSV": 20191374 }, { "STT": 2, "Bang": "Cử nhân", "SHSV": 20191379 }, { "STT": 3, "Bang": "Cử nhân", "SHSV": 20211583 }, { "STT": 4, "Bang": "Cử nhân", "SHSV": 20210506 }, { "STT": 5, "Bang": "Cử nhân", "SHSV": 20211607 }, { "STT": 6, "Bang": "Cử nhân", "SHSV": 20211610 }, { "STT": 7, "Bang": "Cử nhân", "SHSV": 20211613 }, { "STT": 8, "Bang": "Cử nhân", "SHSV": 20191216 }, { "STT": 9, "Bang": "Cử nhân", "SHSV": 20191233 }, { "STT": 10, "Bang": "Cử nhân", "SHSV": 20191276 }, { "STT": 11, "Bang": "Cử nhân", "SHSV": 20191238 }, { "STT": 12, "Bang": "Cử nhân", "SHSV": 20201839 }, { "STT": 13, "Bang": "Cử nhân", "SHSV": 20201944 }, { "STT": 14, "Bang": "Cử nhân", "SHSV": 20201945 }, { "STT": 15, "Bang": "Cử nhân", "SHSV": 20212228 }, { "STT": 16, "Bang": "Cử nhân", "SHSV": 20212143 }, { "STT": 17, "Bang": "Cử nhân", "SHSV": 20212167 }, { "STT": 18, "Bang": "Cử nhân", "SHSV": 20212197 }, { "STT": 19, "Bang": "Cử nhân", "SHSV": 20212201 }, { "STT": 20, "Bang": "Cử nhân", "SHSV": 20212204 }, { "STT": 21, "Bang": "Cử nhân", "SHSV": 20212208 }, { "STT": 22, "Bang": "Cử nhân", "SHSV": 20212225 }, { "STT": 23, "Bang": "Cử nhân", "SHSV": 20220002 }, { "STT": 24, "Bang": "Cử nhân", "SHSV": 20180717 }, { "STT": 25, "Bang": "Cử nhân", "SHSV": 20190981 }, { "STT": 26, "Bang": "Cử nhân", "SHSV": 20191383 }, { "STT": 27, "Bang": "Cử nhân", "SHSV": 20190979 }, { "STT": 28, "Bang": "Cử nhân", "SHSV": 20201418 }, { "STT": 29, "Bang": "Cử nhân", "SHSV": 20201503 }, { "STT": 30, "Bang": "Cử nhân", "SHSV": 20201570 }, { "STT": 31, "Bang": "Cử nhân", "SHSV": 20201665 }, { "STT": 32, "Bang": "Cử nhân", "SHSV": 20201705 }, { "STT": 33, "Bang": "Cử nhân", "SHSV": 20201373 }, { "STT": 34, "Bang": "Cử nhân", "SHSV": 20201542 }, { "STT": 35, "Bang": "Cử nhân", "SHSV": 20201562 }, { "STT": 36, "Bang": "Cử nhân", "SHSV": 20201591 }, { "STT": 37, "Bang": "Cử nhân", "SHSV": 20201438 }, { "STT": 38, "Bang": "Cử nhân", "SHSV": 20201707 }, { "STT": 39, "Bang": "Cử nhân", "SHSV": 20201346 }, { "STT": 40, "Bang": "Cử nhân", "SHSV": 20201459 }, { "STT": 41, "Bang": "Cử nhân", "SHSV": 20201554 }, { "STT": 42, "Bang": "Cử nhân", "SHSV": 20201668 }, { "STT": 43, "Bang": "Cử nhân", "SHSV": 20201718 }, { "STT": 44, "Bang": "Cử nhân", "SHSV": 20201432 }, { "STT": 45, "Bang": "Cử nhân", "SHSV": 20201479 }, { "STT": 46, "Bang": "Cử nhân", "SHSV": 20201807 }, { "STT": 47, "Bang": "Cử nhân", "SHSV": 20201339 }, { "STT": 48, "Bang": "Cử nhân", "SHSV": 20201566 }, { "STT": 49, "Bang": "Cử nhân", "SHSV": 20201586 }, { "STT": 50, "Bang": "Cử nhân", "SHSV": 20201701 }, { "STT": 51, "Bang": "Cử nhân", "SHSV": 20200642 }, { "STT": 52, "Bang": "Cử nhân", "SHSV": 20201623 }, { "STT": 53, "Bang": "Cử nhân", "SHSV": 20201662 }, { "STT": 54, "Bang": "Cử nhân", "SHSV": 20201722 }, { "STT": 55, "Bang": "Cử nhân", "SHSV": 20201758 }, { "STT": 56, "Bang": "Cử nhân", "SHSV": 20201492 }, { "STT": 57, "Bang": "Cử nhân", "SHSV": 20201502 }, { "STT": 58, "Bang": "Cử nhân", "SHSV": 20201550 }, { "STT": 59, "Bang": "Cử nhân", "SHSV": 20201776 }, { "STT": 60, "Bang": "Cử nhân", "SHSV": 20211641 }, { "STT": 61, "Bang": "Cử nhân", "SHSV": 20211689 }, { "STT": 62, "Bang": "Cử nhân", "SHSV": 20211699 }, { "STT": 63, "Bang": "Cử nhân", "SHSV": 20211715 }, { "STT": 64, "Bang": "Cử nhân", "SHSV": 20211763 }, { "STT": 65, "Bang": "Cử nhân", "SHSV": 20211863 }, { "STT": 66, "Bang": "Cử nhân", "SHSV": 20211928 }, { "STT": 67, "Bang": "Cử nhân", "SHSV": 20211938 }, { "STT": 68, "Bang": "Cử nhân", "SHSV": 20211711 }, { "STT": 69, "Bang": "Cử nhân", "SHSV": 20211716 }, { "STT": 70, "Bang": "Cử nhân", "SHSV": 20211824 }, { "STT": 71, "Bang": "Cử nhân", "SHSV": 20211853 }, { "STT": 72, "Bang": "Cử nhân", "SHSV": 20211939 }, { "STT": 73, "Bang": "Cử nhân", "SHSV": 20211986 }, { "STT": 74, "Bang": "Cử nhân", "SHSV": 20211998 }, { "STT": 75, "Bang": "Cử nhân", "SHSV": 20212085 }, { "STT": 76, "Bang": "Cử nhân", "SHSV": 20212004 }, { "STT": 77, "Bang": "Cử nhân", "SHSV": 20212015 }, { "STT": 78, "Bang": "Cử nhân", "SHSV": 20210858 }, { "STT": 79, "Bang": "Cử nhân", "SHSV": 20212108 }, { "STT": 80, "Bang": "Cử nhân", "SHSV": 20211701 }, { "STT": 81, "Bang": "Cử nhân", "SHSV": 20212034 }, { "STT": 82, "Bang": "Cử nhân", "SHSV": 20212053 }, { "STT": 83, "Bang": "Cử nhân", "SHSV": 20212064 }, { "STT": 84, "Bang": "Cử nhân", "SHSV": 20211770 }, { "STT": 85, "Bang": "Cử nhân", "SHSV": 20211826 }, { "STT": 86, "Bang": "Cử nhân", "SHSV": 20211941 }, { "STT": 87, "Bang": "Cử nhân", "SHSV": 20211634 }, { "STT": 88, "Bang": "Cử nhân", "SHSV": 20211645 }, { "STT": 89, "Bang": "Cử nhân", "SHSV": 20211719 }, { "STT": 90, "Bang": "Cử nhân", "SHSV": 20211771 }, { "STT": 91, "Bang": "Cử nhân", "SHSV": 20210391 }, { "STT": 92, "Bang": "Cử nhân", "SHSV": 20211844 }, { "STT": 93, "Bang": "Cử nhân", "SHSV": 20211888 }, { "STT": 94, "Bang": "Cử nhân", "SHSV": 20211920 }, { "STT": 95, "Bang": "Cử nhân", "SHSV": 20211973 }, { "STT": 96, "Bang": "Cử nhân", "SHSV": 20212000 }, { "STT": 97, "Bang": "Cử nhân", "SHSV": 20211755 }, { "STT": 98, "Bang": "Cử nhân", "SHSV": 20211764 }, { "STT": 99, "Bang": "Cử nhân", "SHSV": 20211801 }, { "STT": 100, "Bang": "Cử nhân", "SHSV": 20211911 }, { "STT": 101, "Bang": "Cử nhân", "SHSV": 20211933 }, { "STT": 102, "Bang": "Cử nhân", "SHSV": 20212077 }, { "STT": 103, "Bang": "Cử nhân", "SHSV": 20212089 }, { "STT": 104, "Bang": "Cử nhân", "SHSV": 20212007 }, { "STT": 105, "Bang": "Cử nhân", "SHSV": 20212040 }, { "STT": 106, "Bang": "Cử nhân", "SHSV": 20212112 }, { "STT": 107, "Bang": "Cử nhân", "SHSV": 20211636 }, { "STT": 108, "Bang": "Cử nhân", "SHSV": 20211656 }, { "STT": 109, "Bang": "Cử nhân", "SHSV": 20211679 }, { "STT": 110, "Bang": "Cử nhân", "SHSV": 20211757 }, { "STT": 111, "Bang": "Cử nhân", "SHSV": 20211765 }, { "STT": 112, "Bang": "Cử nhân", "SHSV": 20211781 }, { "STT": 113, "Bang": "Cử nhân", "SHSV": 20211815 }, { "STT": 114, "Bang": "Cử nhân", "SHSV": 20211945 }, { "STT": 115, "Bang": "Cử nhân", "SHSV": 20211956 }, { "STT": 116, "Bang": "Cử nhân", "SHSV": 20211830 }, { "STT": 117, "Bang": "Cử nhân", "SHSV": 20211859 }, { "STT": 118, "Bang": "Cử nhân", "SHSV": 20211935 }, { "STT": 119, "Bang": "Cử nhân", "SHSV": 20211957 }, { "STT": 120, "Bang": "Cử nhân", "SHSV": 20212048 }, { "STT": 121, "Bang": "Cử nhân", "SHSV": 20212079 }, { "STT": 122, "Bang": "Cử nhân", "SHSV": 20212011 }, { "STT": 123, "Bang": "Cử nhân", "SHSV": 20212042 }, { "STT": 124, "Bang": "Cử nhân", "SHSV": 20212058 }, { "STT": 125, "Bang": "Cử nhân", "SHSV": 20212102 }, { "STT": 126, "Bang": "Cử nhân", "SHSV": 20212114 }, { "STT": 127, "Bang": "Cử nhân", "SHSV": 20211669 }, { "STT": 128, "Bang": "Cử nhân", "SHSV": 20211747 }, { "STT": 129, "Bang": "Cử nhân", "SHSV": 20211831 }, { "STT": 130, "Bang": "Cử nhân", "SHSV": 20211891 }, { "STT": 131, "Bang": "Cử nhân", "SHSV": 20211903 }, { "STT": 132, "Bang": "Cử nhân", "SHSV": 20211924 }, { "STT": 133, "Bang": "Cử nhân", "SHSV": 20211958 }, { "STT": 134, "Bang": "Cử nhân", "SHSV": 20211992 }, { "STT": 135, "Bang": "Cử nhân", "SHSV": 20212009 }, { "STT": 136, "Bang": "Cử nhân", "SHSV": 20212043 }, { "STT": 137, "Bang": "Cử nhân", "SHSV": 20210047 }, { "STT": 138, "Bang": "Cử nhân", "SHSV": 20211650 }, { "STT": 139, "Bang": "Cử nhân", "SHSV": 20211805 }, { "STT": 140, "Bang": "Cử nhân", "SHSV": 20211904 }, { "STT": 141, "Bang": "Cử nhân", "SHSV": 20211925 }, { "STT": 142, "Bang": "Cử nhân", "SHSV": 20211993 }, { "STT": 143, "Bang": "Cử nhân", "SHSV": 20210402 }, { "STT": 144, "Bang": "Cử nhân", "SHSV": 20211807 }, { "STT": 145, "Bang": "Cử nhân", "SHSV": 20211819 }, { "STT": 146, "Bang": "Cử nhân", "SHSV": 20211838 }, { "STT": 147, "Bang": "Cử nhân", "SHSV": 20211882 }, { "STT": 148, "Bang": "Cử nhân", "SHSV": 20211893 }, { "STT": 149, "Bang": "Cử nhân", "SHSV": 20211926 }, { "STT": 150, "Bang": "Cử nhân", "SHSV": 20211942 }, { "STT": 151, "Bang": "Cử nhân", "SHSV": 20211949 }, { "STT": 152, "Bang": "Cử nhân", "SHSV": 20212047 }, { "STT": 153, "Bang": "Cử nhân", "SHSV": 20211652 }, { "STT": 154, "Bang": "Cử nhân", "SHSV": 20211661 }, { "STT": 155, "Bang": "Cử nhân", "SHSV": 20211698 }, { "STT": 156, "Bang": "Cử nhân", "SHSV": 20211796 }, { "STT": 157, "Bang": "Cử nhân", "SHSV": 20211927 }, { "STT": 158, "Bang": "Cử nhân", "SHSV": 20211978 }, { "STT": 159, "Bang": "Cử nhân", "SHSV": 20212046 }, { "STT": 160, "Bang": "Cử nhân", "SHSV": 20212071 }, { "STT": 1, "Bang": "Kỹ sư", "SHSV": 20175119 }, { "STT": 2, "Bang": "Kỹ sư", "SHSV": 20180623 }, { "STT": 3, "Bang": "Kỹ sư", "SHSV": 20180641 }, { "STT": 4, "Bang": "Kỹ sư", "SHSV": 20180930 }, { "STT": 5, "Bang": "Kỹ sư", "SHSV": 20180636 }, { "STT": 6, "Bang": "Kỹ sư", "SHSV": 20180778 }, { "STT": 7, "Bang": "Kỹ sư", "SHSV": 20190971 }, { "STT": 8, "Bang": "Kỹ sư", "SHSV": 20190862 }, { "STT": 9, "Bang": "Kỹ sư", "SHSV": 20191151 }, { "STT": 10, "Bang": "Kỹ sư", "SHSV": 20190731 }, { "STT": 11, "Bang": "Kỹ sư", "SHSV": 20190897 }, { "STT": 12, "Bang": "Kỹ sư", "SHSV": 20191163 }, { "STT": 13, "Bang": "Kỹ sư", "SHSV": 20190846 }, { "STT": 14, "Bang": "Kỹ sư", "SHSV": 20190888 }, { "STT": 15, "Bang": "Kỹ sư", "SHSV": 20190806 }, { "STT": 16, "Bang": "Kỹ sư", "SHSV": 20190867 }];
+    const lookupMap = new Map(STUDENTS.map(record => [record.mssv, record]));
 
-    // Build lookup map: SHSV → record
-    const lookup_map = {};
-    DATA.forEach(r => { lookup_map[String(r.SHSV)] = r; });
+    const searchPanel = document.getElementById('search-panel');
+    const input = document.getElementById('mssv-input');
+    const lookupButton = document.getElementById('lookup-button');
+    const resetButton = document.getElementById('reset-button');
+    const resultArea = document.getElementById('result');
+    const foundResult = document.getElementById('result-found');
+    const errorResult = document.getElementById('result-error');
+    const errorTitle = document.getElementById('error-title');
+    const errorHint = document.getElementById('input-hint');
+    const resultStt = document.getElementById('result-stt');
+    const resultName = document.getElementById('result-name');
+    const resultMssv = document.getElementById('result-mssv');
+    const resultDegree = document.getElementById('result-degree');
 
-    const input = document.getElementById('shsv-input');
-    const resultDiv = document.getElementById('result');
+    lookupButton.addEventListener('click', lookup);
+    resetButton.addEventListener('click', resetLookup);
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') lookup();
+    });
 
-    // Enter key support
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') lookup(); });
-
-    function lookup() {
-      const val = input.value.trim();
-      if (!val) { showPlaceholder(); return; }
-
-      const record = lookup_map[val];
-
-      if (record) {
-        resultDiv.innerHTML = `
-          <div class="result-found">
-            <div class="stt-display">
-              <div class="stt-number">${record.STT}</div>
-            </div>
-            <div class="stt-info-row">
-              <div class="info-chip">
-                <div class="info-chip-value">${record.Bang}</div>
-              </div>
-            </div>
-          </div>`;
-      } else {
-        resultDiv.innerHTML = `
-          <div class="result-notfound">
-            <div class="notfound-icon">✕</div>
-            <div class="notfound-text">Không tìm thấy sinh viên</div>
-            <div class="notfound-hint">Kiểm tra lại số hiệu sinh viên</div>
-          </div>`;
-      }
+    function showOnly(target) {
+      resultArea.hidden = !target;
+      foundResult.hidden = target !== foundResult;
+      errorResult.hidden = target !== errorResult;
     }
 
-    function showPlaceholder() {
-      resultDiv.innerHTML = '<p class="placeholder-text">Kết quả sẽ hiển thị ở đây</p>';
+    function showError(title, hint) {
+      errorTitle.textContent = title;
+      errorHint.textContent = hint;
+      showOnly(errorResult);
+    }
+
+    function lookup() {
+      const mssv = input.value.trim();
+
+      if (!mssv) {
+        showOnly(null);
+        return;
+      }
+
+      if (!/^\d{8,9}$/.test(mssv)) {
+        showError('Mã số sinh viên không hợp lệ', 'Vui lòng nhập 8–9 chữ số');
+        return;
+      }
+
+      const record = lookupMap.get(mssv);
+
+      if (!record) {
+        showError('Không tìm thấy sinh viên', 'Kiểm tra lại mã số sinh viên');
+        return;
+      }
+
+      resultStt.textContent = record.stt;
+      resultName.textContent = record.name;
+      resultMssv.textContent = `MSSV: ${record.mssv}`;
+      resultDegree.textContent = `Bằng ${record.degree.toLowerCase()}`;
+      searchPanel.hidden = true;
+      showOnly(foundResult);
+    }
+
+    function resetLookup() {
+      input.value = '';
+      searchPanel.hidden = false;
+      showOnly(null);
+      input.focus();
     }
   </script>
 </body>
