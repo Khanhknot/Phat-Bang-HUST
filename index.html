@@ -375,13 +375,13 @@
     <div id="search-panel">
       <div class="header">
 
-        <h1>Tra Cứu Số Thứ Tự</h1>
+        <h1>Tra Cứu STT Ký Bằng TN</h1>
       </div>
 
       <div class="input-section">
         <label for="mssv-input">Nhập mã số sinh viên</label>
         <div class="input-wrapper">
-          <input type="text" id="mssv-input" placeholder="VD: 20211593" inputmode="numeric" autocomplete="off"
+          <input type="text" id="mssv-input" placeholder="VD: 20201999" inputmode="numeric" autocomplete="off"
             spellcheck="false" maxlength="9" pattern="[0-9]{8,9}" aria-describedby="input-hint" />
           <button type="button" id="lookup-button">Tra cứu</button>
         </div>
@@ -391,7 +391,7 @@
     <div id="result" role="status" aria-live="polite" hidden>
       <div class="result-found" id="result-found" hidden>
         <div class="stt-display">
-          <div class="stt-label">Số thứ tự nhận bằng</div>
+          <div class="stt-label">STT ký sổ nhận bằng</div>
           <div class="stt-number" id="result-stt"></div>
         </div>
         <div class="student-name" id="result-name"></div>
@@ -470,7 +470,7 @@
       resultStt.textContent = record.stt;
       resultName.textContent = record.name;
       resultMssv.textContent = `MSSV: ${record.mssv}`;
-      resultDegree.textContent = `Bằng ${record.degree.toLowerCase()}`;
+      resultDegree.textContent = `Bằng ${record.degree}`;
       searchPanel.hidden = true;
       showOnly(foundResult);
     }
